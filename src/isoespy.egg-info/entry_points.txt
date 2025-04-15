@@ -1,0 +1,7 @@
+[console_scripts]
+isoespy-de = isoespy.cli:isoespy_de_entry
+isoespy-edger = isoespy.cli:isoespy_edger_entry
+isoespy-ff = isoespy.cli:isoespy_ff_entry
+isoespy-makefa = isoespy.cli:isoespy_makefa_entry
+isoespy-makegtf = isoespy.cli:isoespy_makegtf_entry
+isoespy-orfpred = isoespy.cli:isoespy_orfpred_entry

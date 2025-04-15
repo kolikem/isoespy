@@ -1,0 +1,13 @@
+# 仮想環境
+.venv/
+
+# Mac の隠しファイル
+.DS_Store
+
+# 大きなデータファイル
+data/
+kiyose_2022/
+
+# Pythonキャッシュ
+__pycache__/
+*.pyc

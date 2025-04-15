@@ -1,0 +1,25 @@
+Metadata-Version: 2.1
+Name: isoespy
+Version: 0.0.3
+Summary: This package visualizes isoform structures, expression levels and functional features.
+Home-page: https://github.com/kolikem/isoespy
+Author: Ko Ikemoto
+Author-email: imko@m.u-tokyo.ac.jp
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: matplotlib>=3.5
+Requires-Dist: pandas>=1.3
+Requires-Dist: numpy>=1.21
+Requires-Dist: seaborn>=0.10.0
+Requires-Dist: pysam>=0.20.0
+
+# isoespy
+
+This package is a visualization tool for gene isoforms obtained from long-read RNA-seq. It facilitates intuitive understanding by enabling comparison of differential expression between two groups and visualizing functional predictions of isoforms.
+
+## Installation
+
+```shell
+$ python -m pip install isoespy
+```

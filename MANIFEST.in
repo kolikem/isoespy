@@ -1,0 +1,4 @@
+graft src
+include src/isoespy/*.pyx
+include src/isoespy/*.c
+recursive-exclude __pycache__*.py[cod]
