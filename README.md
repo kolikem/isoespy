@@ -4,7 +4,7 @@
 
 ---
 
-## 🔧 Features
+## Features
 
 - Differential expression visualization between two sample groups (e.g., tumor vs. normal)
 - Visualization of:
@@ -16,7 +16,7 @@
 
 ---
 
-## 📦 Installation
+## Installation
 
 Isoespy can be installed via PyPI:
 
@@ -34,7 +34,7 @@ python -m pip install isoespy
 
 ---
 
-## 🚀 Commands Overview
+## Commands Overview
 
 Isoespy provides six CLI commands:
 
@@ -106,7 +106,7 @@ isoespy-ff --gene_name <gene> --gtf_data <GTF> --meta_data <metadata> \
 
 ---
 
-## 📁 Requirements
+## Requirements
 
 ### Files
 
@@ -134,7 +134,7 @@ Users are responsible for preparing the required files and ensuring `edgeR` is i
 
 ---
 
-## 🪪 License
+## License
 
 MIT License
 
