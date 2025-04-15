@@ -1,6 +1,6 @@
 # Isoespy
 
-**Isoespy** is a visualization and functional annotation tool for transcript isoforms identified from long-read transcriptome data. It assists in the interpretation of isoform-level transcriptomic models, which are identified and quantified from RNA-seq data, by supporting differential expression analysis, novel isoform ORF prediction, and integration of external functional predictions. The tool provides intuitive visualizations of gene expression states, based on these processed data.
+**Isoespy** is a visualization tool for transcript isoforms identified from long-read transcriptome data. It assists in the interpretation of isoform-level transcriptomic models, which are identified and quantified from RNA-seq data, by supporting differential expression analysis, novel isoform ORF prediction, and integration of functional predictions by external tools. The tool provides intuitive visualizations of gene expression states, based on these processed data.
 
 ---
 
