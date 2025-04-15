@@ -115,8 +115,8 @@ isoespy-ff --gene_name <gene> --gtf_data <GTF> --meta_data <metadata> \
 
 ### External Tools
 
-- [CPAT](https://github.com/huangyh09/CPAT)
-- [TransDecoder](https://github.com/TransDecoder/TransDecoder)
+- [CPAT](https://cpat.readthedocs.io/en/latest/) by Wang L et al.
+- [TransDecoder](https://github.com/TransDecoder/TransDecoder/wiki) by Haas BJ
 
 ### Python Libraries
 
