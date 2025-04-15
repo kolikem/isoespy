@@ -113,6 +113,8 @@ isoespy-ff --gene_name <gene> --gtf_data <GTF> --meta_data <metadata> \
 - Reference genome FASTA and index
 - CPAT pretrained hexamer and model files
 
+They can be found in my [google drive folder](https://drive.google.com/drive/folders/1ouRLaFQdU4WMlV0Tmxb3KfQuG06GJapX?usp=share_link)
+
 ### External Tools
 
 - [CPAT](https://cpat.readthedocs.io/en/latest/) by Wang L et al.
@@ -133,6 +135,10 @@ isoespy-ff --gene_name <gene> --gtf_data <GTF> --meta_data <metadata> \
 Users are responsible for preparing the required files and ensuring `edgeR` is installed in their R environment.
 
 ---
+
+## Sample data
+
+Users can find sample data in my [google drive folder](https://drive.google.com/drive/folders/1ouRLaFQdU4WMlV0Tmxb3KfQuG06GJapX?usp=share_link)
 
 ## License
 
