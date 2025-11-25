@@ -1,0 +1,8 @@
+# Pythonの仮想環境等 除外
+.DS_Store
+.venv/
+__pycache__/
+
+# sample data 除外
+example_data0/
+example_data1/
