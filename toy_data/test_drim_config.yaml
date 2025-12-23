@@ -1,0 +1,6 @@
+group_column: group
+reference_group: "N"
+coef_name: groupT
+bb_model: true
+one_way: true
+verbose: 1

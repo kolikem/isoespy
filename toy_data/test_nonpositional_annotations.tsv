@@ -1,0 +1,13 @@
+#transcript_id	gene_id	feature_name	feature_type	status
+ENST00000673502.2	JAK1	exp	continuous	2.28
+ENST00000699311.1	JAK1	exp	continuous	0.88
+ENST00000673220.1	JAK1	exp	continuous	3.46
+ENST00000672434.2	JAK1	exp	continuous	2.97
+ENST00000673502.2	JAK1	type	categorical	retained intron
+ENST00000699311.1	JAK1	type	categorical	NMD
+ENST00000673220.1	JAK1	type	categorical	NMD
+ENST00000672434.2	JAK1	type	categorical	protein coding
+ENST00000673502.2	JAK1	uORF	binary	1
+ENST00000699311.1	JAK1	uORF	binary	0
+ENST00000673220.1	JAK1	uORF	binary	0
+ENST00000672434.2	JAK1	uORF	binary	1

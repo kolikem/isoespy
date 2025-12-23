@@ -1,0 +1,66 @@
+[sample]
+#control=N,target=T
+RK002-N	N
+RK002-T	T
+RK019-N	N
+RK019-T	T
+RK021-N	N
+RK021-T	T
+
+[config]
+!#order = ENST00000371514.8,ENST00000478631.6,ENST00000435345.6,ENST00000408941.7
+#order = ENST00000672434.2, ENST00000673502.2, ENST00000699311.1, ENST00000673220.1
+!#order = ENST00000295897.9, ENST00000415165.6, ENST00000503124.5, ENST00000511370.1
+!#order = ENST00000298717.9, ENST00000543235.5, ENST00000537163.5, ENST00000396522.6, METTL3_novel_tx_1
+
+[query]
+#gene = gene_symbol
+
+[gtf]
+#transcript_id=transcript_id
+#cds=CDS
+#exon=exon
+
+[features]
+#protein_domain: feature_id
+#signal_peptide: feature_id
+#NLS: feature_id
+
+[colors.transcripts]
+#ENST00000673502.2 = #1f77b4
+#ENST00000699311.1 = #ff7f0e
+#ENST00000673220.1 = #6699CC
+#ENST00000672434.2 = #999933
+#ENST00000298717.9 = #123456
+#ENST00000543235.5 = #123456
+#ENST00000537163.5 = #123456
+#ENST00000396522.6 = #123456
+#METTL3_novel_tx_1 = #ff7f0e
+
+[colors.exon]
+color = #999999
+
+[colors.cds]
+color = #3b73b9
+
+[colors.ff.continuous]
+cmap = Reds
+
+[colors.ff.categorical]
+palette = colorblind
+protein coding = #CC775E
+retained intron = #FFFFCC
+NMD = #C0B0D0
+
+[colors.ff.binary]
+0 = #FFFFFF
+1 = #B4503C
+
+[colors.de]
+box_group0 = #d8e3f2
+box_group1 = #6699CC
+
+[colors.diu]
+bar_group0 = #d8e3f2
+bar_group1 = #6699CC
+

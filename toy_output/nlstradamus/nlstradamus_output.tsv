@@ -1,0 +1,12 @@
+ENST00000699311.1	posterior	0.979	336	358	KEKNKLKRKKLENKHKKDEEKNK
+Finished analyzing ENST00000699311.1. Found 1 sites.
+
+ENST00000672434.2	posterior	0.979	336	358	KEKNKLKRKKLENKHKKDEEKNK
+Finished analyzing ENST00000672434.2. Found 1 sites.
+
+===================================================
+Analyzed 11 proteins.
+2 sites were found using the posterior probability threshold.
+Input file : test_output/test.gtf.CDS.aa.fa.
+Threshold used : 0.6.
+===================================================

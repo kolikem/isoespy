@@ -1,0 +1,7 @@
+## gff-version 3
+ENST00000415165.6	SignalP-6.0	n-region	1	2	.	.	.	.
+ENST00000415165.6	SignalP-6.0	h-region	3	13	.	.	.	.
+ENST00000415165.6	SignalP-6.0	c-region	14	18	.	.	.	.
+ENST00000295897.9	SignalP-6.0	n-region	1	2	.	.	.	.
+ENST00000295897.9	SignalP-6.0	h-region	3	13	.	.	.	.
+ENST00000295897.9	SignalP-6.0	c-region	14	18	.	.	.	.

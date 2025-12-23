@@ -1,0 +1,3 @@
+#Transcript	tx_from	tx_to	amino_acid	feature	source	attributes
+ENST00000672434.2	336	358	amino_acid	NLS	NLStradamus-1.8	posterior "0.979"; 
+ENST00000699311.1	336	358	amino_acid	NLS	NLStradamus-1.8	posterior "0.979"; 

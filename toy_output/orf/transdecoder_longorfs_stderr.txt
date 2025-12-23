@@ -1,0 +1,19 @@
+* [Thu Nov 27 17:08:16 2025] Running CMD: /Users/kikemoto/Desktop/PROJECTS/IsoformVisualizer/Revision_1/isoespy1.1.1/src/TransDecoder-TransDecoder-v5.7.1/util/compute_base_probs.pl /Users/kikemoto/Desktop/PROJECTS/IsoformVisualizer/Revision_1/isoespy1.1.1/test_output/test.gtf.exon.nt.fa 1 > /Users/kikemoto/Desktop/PROJECTS/IsoformVisualizer/Revision_1/isoespy1.1.1/test_output/orf/test.gtf.exon.nt.fa.transdecoder_dir/base_freqs.dat
+
+
+-first extracting base frequencies, we'll need them later.
+
+
+- extracting ORFs from transcripts.
+-total transcripts to examine:       12
+
+
+#################################
+### Done preparing long ORFs.  ###
+##################################
+
+	Use file: /Users/kikemoto/Desktop/PROJECTS/IsoformVisualizer/Revision_1/isoespy1.1.1/test_output/orf/test.gtf.exon.nt.fa.transdecoder_dir/longest_orfs.pep  for Pfam and/or BlastP searches to enable homology-based coding region identification.
+
+	Then, run TransDecoder.Predict for your final coding region predictions.
+
+

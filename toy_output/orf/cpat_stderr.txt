@@ -1,0 +1,19 @@
+2025-11-27 05:08:16 [INFO]  Running CPAT version 3.0.5...
+2025-11-27 05:08:16 [INFO]  Start codons used: [ATG]
+2025-11-27 05:08:16 [INFO]  Stop codons used: [TAG,TAA,TGA]
+2025-11-27 05:08:16 [INFO]  Reading /Users/kikemoto/Desktop/PROJECTS/IsoformVisualizer/Revision_1/isoespy1.1.1/test_data/Human_Hexamer.tsv
+2025-11-27 05:08:16 [INFO]  Checking format of "/Users/kikemoto/Desktop/PROJECTS/IsoformVisualizer/Revision_1/isoespy1.1.1/test_output/test.gtf.exon.nt.fa"
+2025-11-27 05:08:16 [INFO]  Input gene file is in FASTA format
+2025-11-27 05:08:16 [INFO]  Searching for ORFs ...
+1 sequences finished 2 sequences finished 3 sequences finished 4 sequences finished 5 sequences finished 6 sequences finished 7 sequences finished 8 sequences finished 9 sequences finished 10 sequences finished 11 sequences finished 12 sequences finished 
+
+2025-11-27 05:08:16 [INFO]  Calculate coding probability ...
+2025-11-27 05:08:16 [INFO]  Removing file cpat_output.ORF_info.tsv
+2025-11-27 05:08:16 [INFO]  Select ORF with the highest coding probability ...
+2025-11-27 05:08:16 [INFO]  Done!
+  Output files:
+	*cpat_output.ORF_seqs.fa: The top 5 ORF sequences (at least 75 nucleotides long) in FASTA format.
+	*cpat_output.ORF_prob.tsv: ORF information (strand, frame, start, end, size, Fickett TESTCODE score, Hexamer score) and coding probability)
+	*cpat_output.ORF_prob.best.tsv: The information of the best ORF. This file is a subset of "cpat_output.ORF_prob.tsv"
+	*cpat_output.no_ORF.txt: Sequence IDs or BED entried with no ORF found.
+	*cpat_output.r: Rscript file.
