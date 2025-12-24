@@ -1,10 +1,13 @@
 import subprocess
 import argparse
 import os
+
 try:
+    # 成功すれば、proteinToGenomeという名前が定義される
     import proteinToGenome
 except ModuleNotFoundError:
-    import isoespy.proteinToGenome
+    # 失敗した場合、絶対パスでインポートし、それをproteinToGenomeという名前に割り当てる
+    import isoespy.proteinToGenome as proteinToGenome
 
 ### GTF
 #	chr6	transdecoder	CDS	47712501	47712608	0.000000	+	.	gene_id "-"; transcript_id "ADGRF4_novel_tx_1"; gene_symbol "ADGRF4"; SPLICE_CATEGORY "novel_exon_combination";

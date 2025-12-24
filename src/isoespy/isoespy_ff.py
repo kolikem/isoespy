@@ -10,12 +10,13 @@ import sys
 import warnings
 import argparse
 import matplotlib.ticker as ticker
+import matplotlib.colors as mcolors
 from collections import defaultdict
 from matplotlib.cm import ScalarMappable
 from matplotlib.colorbar import ColorbarBase
 from matplotlib.colors import Normalize
 from matplotlib.colors import LinearSegmentedColormap
-import matplotlib.colors as mcolors
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 try:
     from intronCompression import intronCompression
@@ -26,9 +27,7 @@ except ModuleNotFoundError:
         def intronCompression(model, ci): return model
 
 
-# -----------------------------
-# metadata parser (Standardized)
-# -----------------------------
+# metadata parser
 def parse_metadata(meta_data, gene):
     """Parse metadata file and return required dicts."""
     with open(meta_data) as f:
@@ -47,7 +46,8 @@ def parse_metadata(meta_data, gene):
             "palette": None,
             "default_line": "gray",
             "default_text": "black",
-            "default_tx": "#B3C8CF",
+            "default_tx": "#999999",
+            "default_cds": "#3b73b9",
         },
         "transcripts": {},
         "exon": {"color": None},
@@ -192,6 +192,33 @@ def parse_metadata(meta_data, gene):
         query["tx"][1] = None
 
     return sample_meta, config_meta, ctrl_trgt_table, gtf_meta, colors_meta, query, feature_meta
+
+
+def get_scale_unit(data_range):
+    """プロットの幅に合わせて適切なスケールバーの単位とラベルを計算"""
+    # 幅の約15%〜20%くらいの長さを目指す
+    target_size = data_range * 0.15
+    
+    # 桁数を計算
+    order_of_magnitude = 10 ** int(np.floor(np.log10(target_size)))
+    
+    # キリの良い倍率 (1, 2, 5)
+    multipliers = [1, 2, 5, 10]
+    
+    selected_size = order_of_magnitude
+    for m in multipliers:
+        if order_of_magnitude * m <= target_size:
+            selected_size = order_of_magnitude * m
+        else:
+            break
+            
+    # ラベル作成
+    if selected_size >= 1000:
+        label = f"{int(selected_size/1000)} kb"
+    else:
+        label = f"{int(selected_size)} bp"
+        
+    return selected_size, label
 
 
 # -----------------------------
@@ -446,7 +473,7 @@ def overlaped_feature_indivisuals(DICT):
 # -----------------------------
 # ax1 drawing
 # -----------------------------
-def prepare_ff_ax1(transcripts_data, model_features, ax1, gene_name, tx_colors, colors_meta, tss_mode):
+def prepare_ff_ax1(transcripts_data, model_features, ax1, gene_name, tx_colors, colors_meta, tss_mode, ci=None, hide_scale=False):
     if not transcripts_data: return ax1
     
     MIN = min(transcripts_data, key=lambda x: x["start"])["start"]
@@ -477,8 +504,11 @@ def prepare_ff_ax1(transcripts_data, model_features, ax1, gene_name, tx_colors, 
     text_color = gcol.get("default_text", "black")
     default_tx_color = gcol.get("default_tx", "#B3C8CF")
 
+    user_tx_colors = colors_meta.get("user_transcripts", {})
     exon_override = colors_meta.get("exon", {}).get("color", None)
     cds_override = colors_meta.get("cds", {}).get("color", None)
+    default_tx_color = colors_meta.get("global", {}).get("default_tx", "#999999")
+    default_cds_color = colors_meta.get("global", {}).get("default_cds", "#3b73b9")
 
     for i, transcript_data in enumerate(transcripts_data):
         y_positions.append(i)
@@ -510,8 +540,27 @@ def prepare_ff_ax1(transcripts_data, model_features, ax1, gene_name, tx_colors, 
         else:
             ax1.scatter(x_positions, [y_pos] * len(x_positions), marker="<", color=line_color, s=10)
 
+        
+        # 1. Exon色の決定
+        if tx_name in user_tx_colors:
+            current_exon_color = user_tx_colors[tx_name]
+        elif exon_override:
+            current_exon_color = exon_override
+        else:
+            current_exon_color = tx_colors.get(tx_name, default_tx_color)
+
+        # 2. CDS色の決定
+        base_color = tx_colors.get(tx_name, default_tx_color)
+        if cds_override:
+            current_cds_color = cds_override
+        elif tx_name in user_tx_colors:
+            current_cds_color = user_tx_colors[tx_name]
+        elif base_color == default_tx_color:
+            current_cds_color = default_cds_color
+        else:
+            current_cds_color = base_color
+
         # exon
-        current_exon_color = exon_override or tx_colors.get(tx_name, default_tx_color)
         for exon in transcript_data["exons"]:
             exon_start, exon_end = exon
             ax1.add_patch(
@@ -524,7 +573,6 @@ def prepare_ff_ax1(transcripts_data, model_features, ax1, gene_name, tx_colors, 
             )
 
         # CDS
-        current_cds_color = cds_override or tx_colors.get(tx_name, default_tx_color)
         for cds in transcript_data["cds"]:
             cds_start, cds_end = cds
             ax1.add_patch(
@@ -606,6 +654,24 @@ def prepare_ff_ax1(transcripts_data, model_features, ax1, gene_name, tx_colors, 
                 alpha=0.4,
             )
 
+    # === スケールバーの描画 ===
+    if not hide_scale:
+        data_width = MAX - MIN
+        scale_size, scale_label = get_scale_unit(data_width)
+        bar_y = - 0.8
+        text_y = bar_y - 0.05
+        bar_end = MAX
+        bar_start = MAX - scale_size
+        ax1.plot([bar_start, bar_end], [bar_y, bar_y], color="#3B5894", linewidth=1, clip_on=False)
+        cap_height = 0.1
+        ax1.plot([bar_start, bar_start], [bar_y - cap_height/2, bar_y + cap_height/2], color="#3B5894", linewidth=1, clip_on=False)
+        ax1.plot([bar_end, bar_end], [bar_y - cap_height/2, bar_y + cap_height/2], color="#3B5894", linewidth=1, clip_on=False)
+        ax1.text((bar_start + bar_end) / 2, text_y, scale_label, ha='center', va='top', fontsize=8, color="#3B5894")
+        if ci is not None:
+            note_text = f"Note: Introns compressed"
+            ax1.text(bar_end, bar_y + 0.1, note_text, ha='right', va='bottom', fontsize=8, color="#3B5894", style='italic')
+    # ===========================
+
     space = int((MAX - MIN) / 20)
     ax1.set_xlim(MIN - 2 * space, MAX + space)
     ax1.set_ylim(-1.0, len(transcripts_data) - 0.5)
@@ -648,11 +714,65 @@ def prepare_ff_ax1(transcripts_data, model_features, ax1, gene_name, tx_colors, 
     return ax1
 
 
-# -----------------------------
+def draw_combined_legend(ax, legend_metadata):
+    ax.axis("off")
+    n = len(legend_metadata)
+    if n == 0: return
+
+    slot_height = 1.0 / n
+    
+    for i, meta in enumerate(legend_metadata):
+        y = 1.0 - (i + 1) * slot_height
+        
+        # 凡例用の小領域を作成
+        sub_ax = ax.inset_axes([0.1, y + 0.05 * slot_height, 0.9, slot_height * 0.9], transform=ax.transAxes)
+        sub_ax.axis("off")
+        
+        sub_ax.set_title(meta["title"], loc="left", fontsize=10, fontweight='bold')
+        
+        mode = meta["mode"]
+        info = meta["info"]
+        
+        if mode == "discrete" and info:
+            # カテゴリカル / バイナリ
+            # 変更点: facecolorとedgecolorを分けて指定し、linewidthを追加
+            handles = [
+                patches.Patch(
+                    facecolor=c, 
+                    edgecolor="black", 
+                    linewidth=1.0, 
+                    label=str(l)
+                ) for l, c in info.items()
+            ]
+            
+            sub_ax.legend(
+                handles=handles, 
+                loc='upper left', 
+                bbox_to_anchor=(0, 1.0), 
+                fontsize=9, 
+                frameon=False,
+                borderaxespad=0
+            )
+            
+        elif mode == "continuous" and info:
+            cbar_ax = sub_ax.inset_axes([0, 0.6, 0.6, 0.15], transform=sub_ax.transAxes)
+            
+            sm = ScalarMappable(cmap=info["cmap"], norm=info["norm"])
+            sm.set_array([])
+            
+            cb = plt.colorbar(sm, cax=cbar_ax, orientation='horizontal')
+            cbar_ax.xaxis.set_ticks_position('bottom')
+            cbar_ax.tick_params(labelsize=8)
+            
+            cb.outline.set_edgecolor('black')
+            cb.outline.set_linewidth(1)
+            
+            cbar_ax.set_xticks([info["norm"].vmin, info["norm"].vmax])
+            cbar_ax.set_xticklabels([f"{info['norm'].vmin:.1f}", f"{info['norm'].vmax:.1f}"])
+
+
 # axk drawing
-# -----------------------------
 def prepare_ff_axk(ax_l, transcripts_data, annotation_dataB, ff_colors_meta):
-    # Same as before, logic for feature heatmap
     def is_float(v):
         try:
             float(v)
@@ -664,122 +784,94 @@ def prepare_ff_axk(ax_l, transcripts_data, annotation_dataB, ff_colors_meta):
         bmap = ff_colors_meta.get("binary", {})
         c0 = mcolors.to_rgba(bmap.get("0", "#cccccc"))
         c1 = mcolors.to_rgba(bmap.get("1", "#000000"))
+        legend_map = {"0": c0, "1": c1}
         binary_colors = {"0": c0, "1": c1, None: "white"}
-        return {key: binary_colors.get(str(value), "white") if value is not None else "white" for key, value in A.items()}
+        mapping = {key: binary_colors.get(str(value), "white") if value is not None else "white" for key, value in A.items()}
+        return mapping, legend_map, "discrete"
 
     def Color_categorical(A):
         unique_categories = sorted(set(v for v in A.values() if v is not None))
-
         cat_meta = ff_colors_meta.get("categorical", {})
         manual = cat_meta.get("colors", {})
         palette_name = cat_meta.get("palette", "tab10")
-
+        
         category_colors = {cat: manual[cat] for cat in manual if cat in unique_categories}
         remaining = [cat for cat in unique_categories if cat not in category_colors]
         
         if remaining:
             auto_cols = None
+            # ... (自動色生成ロジック省略: 変更なし) ...
             try:
                 cmap = plt.get_cmap(palette_name, len(remaining))
                 auto_cols = [cmap(i) for i in range(len(remaining))]
             except ValueError:
-                auto_cols = None
-            
-            if auto_cols is None:
-                try:
-                    pal = sns.color_palette(palette_name, len(remaining))
-                    auto_cols = [mcolors.to_rgba(c) for c in pal]
-                except ValueError:
-                    pal = sns.color_palette("tab10", len(remaining))
-                    auto_cols = [mcolors.to_rgba(c) for c in pal]
-
+                pal = sns.color_palette("tab10", len(remaining))
+                auto_cols = [mcolors.to_rgba(c) for c in pal]
             for cat, col in zip(remaining, auto_cols):
                 category_colors[cat] = col
 
+        legend_map = category_colors.copy()
         category_colors[None] = "white"
-        return {key: category_colors[value] for key, value in A.items()}
+        mapping = {key: category_colors[value] for key, value in A.items()}
+        return mapping, legend_map, "discrete"
 
     def Color_continuous(A):
         valid_values = [float(v) for v in A.values() if v is not None and is_float(v)]
         if not valid_values:
-            return {key: "white" for key in A}
-
+            return {key: "white" for key in A}, None, "continuous"
         vmin, vmax = min(valid_values), max(valid_values)
         if vmin == vmax: vmax = vmin + 1
-
         cmap_name = ff_colors_meta.get("continuous", {}).get("cmap", "viridis")
         cmap = plt.get_cmap(cmap_name)
-
         norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
-        return {
-            key: cmap(norm(float(value)))
-            if value is not None and is_float(value)
-            else "white"
-            for key, value in A.items()
-        }
+        mapping = {key: cmap(norm(float(value))) if value is not None and is_float(value) else "white" for key, value in A.items()}
+        legend_info = {"cmap": cmap, "norm": norm}
+        return mapping, legend_info, "continuous"
 
-    # Transcripts are already reversed in plot_isoespy_ff before calling this, 
-    # BUT prepare_ff_ax1 reverses them AGAIN for its own internal logic.
-    # Here, transcripts_data is the ordered list (top to bottom of list).
-    # We want top of list = top of plot (y=N-1).
-    
-    # Actually, plot_isoespy_ff calls: reorder -> (list is Order1, Order2...)
-    # Then calls prepare_ff_ax1 -> reverses locally to plot.
-    # Then calls prepare_ff_axk -> we need to plot Order1 at top.
-    
-    # In axk loop below: y = N - i - 0.9 - 1 ...
-    # i=0 (Order1) -> y approx N. Correct.
-    
-    # fill missing txs
-    for transcript_data in transcripts_data:
-        tx_name = transcript_data["id"]
-        for feat in annotation_dataB:
-            if tx_name not in annotation_dataB[feat][1]:
-                annotation_dataB[feat][1][tx_name] = None
-
-    N = len(transcripts_data)
+    # --- メイン処理 ---
+    # 凡例メタデータを収集するためのリスト
+    legend_metadata = []
     features_l = list(annotation_dataB.keys())
 
+    # 各特徴量ごとに色情報を計算してメタデータを保存
+    for feat in features_l:
+        CATEGORY = annotation_dataB[feat][0]
+        VALUES = annotation_dataB[feat][1]
+        
+        if CATEGORY == "binary":
+            _, info, mode = Color_binary(VALUES)
+        elif CATEGORY == "categorical":
+            _, info, mode = Color_categorical(VALUES)
+        elif CATEGORY == "continuous":
+            _, info, mode = Color_continuous(VALUES)
+        else:
+            info, mode = None, None
+        
+        legend_metadata.append({"title": feat, "mode": mode, "info": info})
+
+    # 描画ループ (凡例描画部分は削除)
+    N = len(transcripts_data)
     for i, transcript_data in enumerate(transcripts_data):
         tx_name = transcript_data["id"]
-
         for j, feat in enumerate(features_l):
             CATEGORY = annotation_dataB[feat][0]
             VALUES = annotation_dataB[feat][1]
+            
+            if CATEGORY == "binary": mapping, _, _ = Color_binary(VALUES)
+            elif CATEGORY == "categorical": mapping, _, _ = Color_categorical(VALUES)
+            elif CATEGORY == "continuous": mapping, _, _ = Color_continuous(VALUES)
+            else: mapping = {k: "white" for k in VALUES}
 
-            if CATEGORY == "binary":
-                colormap = Color_binary(VALUES)
-            elif CATEGORY == "categorical":
-                colormap = Color_categorical(VALUES)
-            elif CATEGORY == "continuous":
-                colormap = Color_continuous(VALUES)
-            else:
-                colormap = {k: "white" for k in VALUES}
-
-            hatch = "//" if VALUES[tx_name] is None else None
+            hatch = "//" if VALUES.get(tx_name) is None else None
             rect = patches.Rectangle(
-                (0.3, N - i - 0.9 - 1),
-                0.4,
-                1,
-                facecolor=colormap.get(tx_name, "white"),
-                edgecolor="black",
-                hatch=hatch,
-                linewidth=2,
+                (0.3, N - i - 0.9 - 1), 0.4, 1,
+                facecolor=mapping.get(tx_name, "white"),
+                edgecolor="black", hatch=hatch, linewidth=2
             )
             ax_l[j].add_patch(rect)
-
-            val_disp = VALUES[tx_name] if VALUES[tx_name] is not None else ""
-            x = 0.3 + 0.4 / 2
-            y = N - i - 0.9 - 1 + 1 / 2
-            ax_l[j].text(
-                x,
-                y,
-                val_disp,
-                ha="center",
-                va="center",
-                rotation="vertical",
-                fontsize=10,
-            )
+            
+            val_disp = VALUES.get(tx_name) if VALUES.get(tx_name) is not None else ""
+            ax_l[j].text(0.5, N - i - 0.9 - 0.5, val_disp, ha="center", va="center", rotation="vertical", fontsize=10)
 
     for j, feat in enumerate(features_l):
         ax_l[j].set_title(feat)
@@ -789,7 +881,7 @@ def prepare_ff_axk(ax_l, transcripts_data, annotation_dataB, ff_colors_meta):
         ax.set_ylim(-1.0, N - 0.5)
         ax.axis("off")
 
-    return ax_l
+    return ax_l, legend_metadata
 
 
 def reorder(transcripts_data, meta_data):
@@ -808,39 +900,45 @@ def reorder(transcripts_data, meta_data):
 def plot_isoespy_ff(transcripts_data, model_features, config_meta, gene_name,
                     meta_data, tx_colors, colors_meta, ci,
                     x_min, x_max, x_min_eff, x_max_eff, annotation_dataB, tss_mode,
-                    output_file=None, dpi=300):
-    # 並び替え
+                    output_file=None, dpi=300, hide_scale=False):
     transcripts_data = reorder(transcripts_data, meta_data)
-    
     if not transcripts_data:
         print("No transcripts found to plot.")
         return
 
     N = len(annotation_dataB.keys())
+    
+    # レイアウト変更: Main + N個のヒートマップ + 1個の凡例スペース
+    # width_ratios: メイン(20), ヒートマップ(1...1), 凡例(4)
+    total_cols = 1 + N + (1 if N > 0 else 0) # ヒートマップがない場合は凡例もなし
+    
     if N == 0:
         fig, ax1 = plt.subplots(ncols=1, figsize=(20, 8))
         ax_l = []
+        ax_legend = None
     else:
-        # width ratios: Main(20) : Heatmaps(1 each)
+        # 凡例用スペースを最後に追加
+        ratios = [20] + [1] * N + [4]
         fig, axes = plt.subplots(
-            ncols=N + 1,
-            figsize=(20, 8),
-            gridspec_kw={"width_ratios": [20] + [1] * N},
+            ncols=len(ratios),
+            figsize=(20 + N + 2, 8), # 幅を少し広げる
+            gridspec_kw={"width_ratios": ratios},
         )
-        if N == 0:
-             ax1 = axes
-             ax_l = []
-        else:
-             ax1 = axes[0]
-             ax_l = axes[1:]
+        ax1 = axes[0]
+        ax_l = axes[1:-1] # 中間がヒートマップ
+        ax_legend = axes[-1] # 最後が凡例
 
-    ax1 = prepare_ff_ax1(transcripts_data, model_features, ax1, gene_name, tx_colors, colors_meta, tss_mode)
+    ax1 = prepare_ff_ax1(transcripts_data, model_features, ax1, gene_name, tx_colors, colors_meta, tss_mode, ci, hide_scale)
     ax1 = prepare_ax1_xaxis(ax1, ci, x_min, x_max, x_min_eff, x_max_eff)
 
     if N != 0:
-        ax_l = prepare_ff_axk(ax_l, transcripts_data, annotation_dataB, colors_meta["ff"])
+        # prepare_ff_axk が legend_metadata も返すようになったので受け取る
+        ax_l, legend_metadata = prepare_ff_axk(ax_l, transcripts_data, annotation_dataB, colors_meta["ff"])
+        
+        # まとめて凡例を描画
+        draw_combined_legend(ax_legend, legend_metadata)
 
-    plt.subplots_adjust(wspace=0.02)
+    plt.subplots_adjust(wspace=0.1) # 間隔調整
 
     if output_file:
         try:
@@ -909,7 +1007,7 @@ def moved_data_for_features(model_features, main_data, ci):
     return model_features
 
 
-def isoespy_ff(gene, gtf_data, meta_data, ci, annotation_file, tss_mode, output_file=None, dpi=300):
+def isoespy_ff(gene, gtf_data, meta_data, ci, annotation_file, tss_mode, output_file=None, dpi=300, hide_scale=False):
     sample_meta, config_meta, ctrl_trgt_table, gtf_meta, colors_meta, query, feature_meta = parse_metadata(meta_data, gene)
 
     # isoform model + colors completion
@@ -959,7 +1057,8 @@ def isoespy_ff(gene, gtf_data, meta_data, ci, annotation_file, tss_mode, output_
         annotation_dataB,
         tss_mode,
         output_file,
-        dpi
+        dpi,
+        hide_scale
     )
 
 
@@ -991,7 +1090,7 @@ def main(args=None):
     parser.add_argument("-tss", "--tss_line", action="store_true", help="Show TSS support lines")
     parser.add_argument("-o", "--output_file", type=str, default=None, help="Save figure to file (e.g., plot.pdf or plot.png)")
     parser.add_argument("--dpi", type=int, default=300, help="Resolution for image formats (e.g., PNG) in DPI")
-
+    parser.add_argument("--hide_scale", action="store_true", help="Hide scale bar")
 
     args = parser.parse_args()
     gene = args.gene_name
@@ -1002,8 +1101,9 @@ def main(args=None):
     tss_mode = args.tss_line
     output_file = args.output_file
     dpi = args.dpi
+    hide_scale = args.hide_scale
 
-    isoespy_ff(gene, gtf_data, meta_data, ci, annotation_data, tss_mode, output_file, dpi)
+    isoespy_ff(gene, gtf_data, meta_data, ci, annotation_data, tss_mode, output_file, dpi, hide_scale)
 
 
 if __name__ == "__main__":

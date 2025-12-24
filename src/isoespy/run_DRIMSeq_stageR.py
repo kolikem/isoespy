@@ -245,7 +245,6 @@ def merge_results(pval_file, prop_file, sample_file, output_file):
             return s.replace("-", ".")
         return s
 
-    # make a mapping original_sample_col -> normalized sample_id
     norm_map = {col: normalize(col) for col in sample_cols}
 
     # melt to long
@@ -255,7 +254,6 @@ def merge_results(pval_file, prop_file, sample_file, output_file):
         var_name="sample_col",
         value_name="proportion"
     )
-    # attach normalized sample_id
     df_long["sample_id"] = df_long["sample_col"].map(norm_map)
 
     # --- join group info ---
@@ -263,7 +261,7 @@ def merge_results(pval_file, prop_file, sample_file, output_file):
         sys.exit("ERROR: samples TSV must contain 'sample_id' and 'group' columns.")
     df_long = df_long.merge(df_smp[["sample_id","group"]], on="sample_id", how="left")
 
-    # quick sanity check: unmatched samples
+    # quick sanity check
     n_unmatched = df_long["group"].isna().sum()
     if n_unmatched > 0:
         uniq_unmatched = sorted(df_long.loc[df_long["group"].isna(), "sample_id"].unique().tolist())
@@ -271,7 +269,7 @@ def merge_results(pval_file, prop_file, sample_file, output_file):
 
     # --- compute group-wise mean proportions ---
     grp_cols = id_cols + ["group"]
-    mean_prop = (df_long.dropna(subset=["group"])  # drop rows without group
+    mean_prop = (df_long.dropna(subset=["group"])
                  .groupby(grp_cols, as_index=False)["proportion"]
                  .mean())
 
@@ -279,12 +277,32 @@ def merge_results(pval_file, prop_file, sample_file, output_file):
     wide = (mean_prop
             .pivot_table(index=id_cols, columns="group", values="proportion")
             .reset_index())
-    wide = wide.rename(columns={c: f"prop_{c}" for c in wide.columns if c not in id_cols})
 
     # --- merge to stageR (by feature_id) ---
     if "feature_id" not in df_stage.columns:
         sys.exit("ERROR: stageR TSV must contain column 'feature_id' (or txID).")
-    out = df_stage.merge(wide, on="feature_id", how="left")
+    
+    if "gene_id" in wide.columns:
+        wide_for_merge = wide.drop(columns=["gene_id"])
+    else:
+        wide_for_merge = wide
+
+    out = df_stage.merge(wide_for_merge, on="feature_id", how="left")
+
+    current_cols = list(out.columns)
+    
+    # 基本の4列（gene_id, tx_id, gene_p, tx_p）をリネーム
+    if len(current_cols) >= 4:
+        current_cols[0] = "gene_id"
+        current_cols[1] = "tx_id"
+        current_cols[2] = "gene_p"
+        current_cols[3] = "tx_p"
+    
+    # 5列目以降（prop列）を prop_0, prop_1 ... にリネーム
+    for i in range(4, len(current_cols)):
+        current_cols[i] = f"prop_{i-4}"
+    
+    out.columns = current_cols
 
     # --- write ---
     out.to_csv(output_file, sep="\t", index=False)

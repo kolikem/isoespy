@@ -246,8 +246,11 @@ def main(args=None):
     # ORF prediction
     transdecoder_outfile = args.workdir + "/" + os.path.basename(args.fasta) + ".transdecoder.bed"
     cpat_outfile = args.workdir + "/" + os.path.basename(args.cpatoutprefix) + ".no_ORF.txt"
-    add_cds_to_gtf_from_cpat_transdecoder(args.workdir, transdecoder_outfile, cpat_outfile, args.gtf, args.meta)
-    print(">>> Finished making complemented new GTF.")
+    try:
+        add_cds_to_gtf_from_cpat_transdecoder(args.workdir, transdecoder_outfile, cpat_outfile, args.gtf, args.meta)
+        print(">>> Finished making complemented new GTF.")
+    except FileNotFoundError:
+        print(">>> No novel ORFs are found.")
 
 if __name__ == "__main__":
     main()
