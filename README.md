@@ -1,4 +1,4 @@
-![isoespy logo](./isoespy_logo.png)
+![isoespy logo](./isoespy_logo.2.png)
 
 # Isoespy
 
