@@ -1,3 +1,5 @@
+![isoespy logo](isoespy_logo.pdf)
+
 # Isoespy
 
 **isoespy** is an analysis toolkit designed to visualize functional features of transcript isoforms and to illustrate isoform-level expression changes between case and control groups.
